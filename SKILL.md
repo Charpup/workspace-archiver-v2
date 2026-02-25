@@ -1,13 +1,24 @@
 ---
 name: workspace-archiver-v2
-description: Archive and backup OpenClaw workspace with versioning and compression. Use when backing up workspace, archiving old projects, creating snapshots, or managing workspace storage. Triggers on "archive workspace", "backup", "workspace snapshot", "archive project".
+description: Archive and backup OpenClaw workspace projects with versioning, multi-format compression (gzip/zip/7z/bzip2/xz), auto-cleanup, and policy-driven auto-archiving. V2 adds AutoArchivePolicy, encryption support, and storage analysis. Triggers on "archive workspace", "backup workspace", "workspace snapshot", "archive project".
+version: 2.0.1
 ---
 
 # Workspace Archiver V2
 
-**Version:** 2.0.0 | **Author:** OpenClaw
+**Version:** 2.0.1 | **Author:** OpenClaw
 
 OpenClaw 工作空间归档和备份工具，支持版本控制、压缩和自动清理。
+
+## V2 新增功能（相比 V1）
+
+| 功能 | V1 | V2 |
+|------|----|----|
+| 压缩格式 | gzip only | gzip / bzip2 / xz / zip / 7z |
+| 加密支持 | ❌ | ✅ AES-256-GCM |
+| 自动归档策略 | ❌ | ✅ AutoArchivePolicy |
+| 存储分析 | ❌ | ✅ `analyze` 命令 |
+| 自动清理 | 手动 | ✅ 可配置保留策略 |
 
 ## 功能特性
 
