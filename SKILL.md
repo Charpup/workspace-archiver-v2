@@ -1,14 +1,65 @@
 ---
-name: workspace-archiver-v2
-description: Archive and backup OpenClaw workspace projects with versioning, multi-format compression (gzip/zip/7z/bzip2/xz), auto-cleanup, and policy-driven auto-archiving. V2 adds AutoArchivePolicy, encryption support, and storage analysis. Triggers on "archive workspace", "backup workspace", "workspace snapshot", "archive project".
-version: 2.0.1
+name: workspace-archiver
+description: Archive, backup, and standardize OpenClaw workspace with versioning, compression, and OpenClaw directory structure compliance. V2 adds AutoArchivePolicy, encryption, storage analysis, and skill standardization. Triggers on "archive workspace", "backup workspace", "workspace snapshot", "archive project", "standardize skills", "skill migration".
+version: 2.1.0
 ---
 
-# Workspace Archiver V2
+# Workspace Archiver 🗄️ v2.1
 
-**Version:** 2.0.1 | **Author:** OpenClaw
+**Version:** 2.1.0 | **Author:** OpenClaw
 
-OpenClaw 工作空间归档和备份工具，支持版本控制、压缩和自动清理。
+OpenClaw 工作空间归档、备份和标准化工具，支持版本控制、压缩和目录结构规范化。
+
+## What's New in v2.1
+
+### 🆕 OpenClaw Directory Standardization
+Standardize skill directory structure according to OpenClaw official specification:
+
+```bash
+# Migrate skills to system directory
+workspace-archiver migrate-skills --dry-run
+workspace-archiver migrate-skills --execute
+
+# Standardize naming (remove prefixes, unify versions)
+workspace-archiver standardize-names
+
+# Clean up old/duplicate versions
+workspace-archiver cleanup-duplicates
+```
+
+### Skill Organization Best Practices
+
+#### Standard Directory Structure
+```
+~/.openclaw/
+├── skills/                     # System-level skills (stable)
+│   ├── triadev/
+│   ├── tdd-sdd-skill/
+│   └── [...]/
+├── workspace/
+│   ├── skills/                 # Development/custom skills
+│   │   ├── loc-mvr/           # Large projects
+│   │   ├── marker-pdf-ocr/    # In development
+│   │   └── x-api/             # In development
+│   └── [...]
+└── [...]
+```
+
+#### Naming Conventions
+| Pattern | Example | Status |
+|---------|---------|--------|
+| ✅ Simple name | `triadev`, `docs-rag` | Preferred |
+| ❌ Prefix | ~~`openclaw-docs-rag`~~ | Avoid |
+| ❌ Version in dir | ~~`workspace-archiver-v2`~~ | Avoid |
+| ✅ Version in SKILL.md | `version: 2.1.0` | Required |
+
+#### Migration Checklist
+- [ ] Identify skills in workspace/skills/
+- [ ] Classify: stable vs development vs large-project
+- [ ] Migrate stable skills to ~/.openclaw/skills/
+- [ ] Remove old/duplicate versions
+- [ ] Standardize names (remove prefixes, versions)
+- [ ] Update all references
 
 ## V2 新增功能（相比 V1）
 
@@ -19,6 +70,7 @@ OpenClaw 工作空间归档和备份工具，支持版本控制、压缩和自�
 | 自动归档策略 | ❌ | ✅ AutoArchivePolicy |
 | 存储分析 | ❌ | ✅ `analyze` 命令 |
 | 自动清理 | 手动 | ✅ 可配置保留策略 |
+| **目录标准化** | ❌ | ✅ **v2.1 新增** |
 
 ## 功能特性
 
@@ -357,6 +409,9 @@ npm run test:integration
 
 # 带覆盖率报告
 npm run test:coverage
+
+# 测试目录标准化
+npm run test:standardization
 ```
 
 ## 与 CI/CD 集成
@@ -378,6 +433,66 @@ jobs:
         run: workspace-archiver snapshot --name "ci-backup"
       - name: Upload to S3
         run: aws s3 cp ./archives/ci-backup.tar.gz s3://backups/workspace/
+
+# .github/workflows/standardize.yml
+name: Standardize Skills
+on:
+  workflow_dispatch:
+jobs:
+  standardize:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Install archiver
+        run: npm install -g workspace-archiver-v2
+      - name: Dry run migration
+        run: workspace-archiver migrate-skills --dry-run
+      - name: Execute migration
+        run: workspace-archiver migrate-skills --execute
+```
+
+## Real-World Example: Skill Migration
+
+### Before (Messy)
+```
+~/.openclaw/
+├── skills/
+│   └── triadev/
+└── workspace/skills/
+    ├── openclaw-config-validator/   # ❌ wrong prefix
+    ├── openclaw-docs-rag/           # ❌ wrong prefix
+    ├── workspace-archiver-v2/       # ❌ version in name
+    ├── notion-mcp-wrapper-old/      # ❌ old version
+    ├── notion-mcp-wrapper-migrated/ # ❌ duplicate
+    └── task-workflow-v3/            # ❌ version in name
+```
+
+### After (Standardized)
+```
+~/.openclaw/
+├── skills/
+│   ├── triadev/
+│   ├── config-validator/            # ✅ simple name
+│   ├── docs-rag/                    # ✅ simple name
+│   ├── workspace-archiver/          # ✅ version in SKILL.md
+│   └── notion-mcp-wrapper/          # ✅ single version
+└── workspace/skills/
+    └── [development skills only]
+```
+
+### Migration Commands
+```bash
+# Step 1: Analyze current state
+workspace-archiver analyze-skills
+
+# Step 2: Dry run to preview changes
+workspace-archiver migrate-skills --dry-run
+
+# Step 3: Execute migration
+workspace-archiver migrate-skills --execute
+
+# Step 4: Verify
+workspace-archiver verify-structure
 ```
 
 ## License
